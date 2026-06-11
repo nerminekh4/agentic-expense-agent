@@ -159,6 +159,7 @@ venv.bak/
 *.json
 *.jpg
 .DS_Store
+creds_b64.txt
 
 # Spyder project settings
 .spyderproject

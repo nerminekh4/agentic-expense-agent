@@ -1,5 +1,7 @@
 import os
 import io
+import json
+import base64
 import uuid
 import gspread
 from google.oauth2.service_account import Credentials
@@ -19,11 +21,24 @@ class GoogleSheetsClient:
     def __init__(self):
         load_dotenv()
 
-        # Chemin vers le fichier JSON du compte de service (résolu via .env)
+        # Deux façons de fournir les credentials du compte de service :
+        # - GOOGLE_SERVICE_ACCOUNT_JSON_B64 : contenu du JSON encodé en base64
+        #   (pratique pour le déploiement, ex: Railway/Render)
+        # - GOOGLE_SERVICE_ACCOUNT_JSON : chemin vers le fichier JSON local
+        creds_b64 = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON_B64")
         creds_path = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON")
 
-        # Construction des credentials à partir du fichier JSON et des scopes
-        creds = Credentials.from_service_account_file(creds_path, scopes=SCOPES)
+        if creds_b64:
+            # Décodage base64 -> chaîne JSON -> dict Python
+            creds_info = json.loads(base64.b64decode(creds_b64).decode("utf-8"))
+            creds = Credentials.from_service_account_info(creds_info, scopes=SCOPES)
+        elif creds_path:
+            creds = Credentials.from_service_account_file(creds_path, scopes=SCOPES)
+        else:
+            raise ValueError(
+                "Aucun credential Google trouvé. Définis GOOGLE_SERVICE_ACCOUNT_JSON "
+                "(chemin local) ou GOOGLE_SERVICE_ACCOUNT_JSON_B64 (base64, pour le déploiement)."
+            )
 
         # Autorisation gspread avec ces credentials
         client = gspread.authorize(creds)
