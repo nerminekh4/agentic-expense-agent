@@ -157,6 +157,8 @@ ENV/
 env.bak/
 venv.bak/
 *.json
+*.jpg
+.DS_Store
 
 # Spyder project settings
 .spyderproject
