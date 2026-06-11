@@ -1,0 +1,35 @@
+Analyse l'image fournie, qui représente un justificatif de dépense professionnelle
+(ticket de restaurant, billet de train, facture d'hôtel, etc.).
+
+Extrait les informations suivantes et retourne-les UNIQUEMENT sous la forme d'un objet
+JSON valide, avec exactement les clés suivantes :
+
+- "type_document" (string) : catégorie du document, une seule valeur parmi
+  "restaurant", "transport", "hôtel", "autre"
+- "fournisseur" (string) : nom du commerce ou de la compagnie (ex : "SNCF",
+  "Bistrot Paul", "Ibis")
+- "date" (string) : date de la dépense au format JJ/MM/AAAA
+- "montant_ttc" (number) : montant total TTC en euros, sous forme de nombre
+  décimal (ex : 24.50)
+- "tva" (number ou null) : montant de la TVA en euros si lisible, sinon null
+- "devise" (string) : devise utilisée, sous forme de code ISO (ex : "EUR"),
+  "EUR" par défaut
+- "description" (string) : courte description libre du motif de la dépense
+  (ex : "Déjeuner d'affaires", "Trajet Paris-Lyon")
+- "confiance" (string) : niveau de confiance global de l'extraction, une
+  seule valeur parmi "haute", "moyen", "basse"
+
+Exemple de réponse attendue :
+{
+  "type_document": "restaurant",
+  "fournisseur": "Bistrot Paul",
+  "date": "12/03/2025",
+  "montant_ttc": 42.50,
+  "tva": 7.08,
+  "devise": "EUR",
+  "description": "Déjeuner avec un client",
+  "confiance": "haute"
+}
+
+Retourne uniquement ce JSON, sans aucun texte, commentaire ou formatage
+Markdown autour.
