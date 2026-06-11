@@ -1,5 +1,9 @@
 # Agentic Expense Agent — Application de gestion des notes de frais
 
+## Déploiement
+
+L'application est déployée sur Render : https://agentic-expense-agent.onrender.com/
+
 ## Contexte et objectif
 
 Application web agentique permettant à un salarié de prendre en photo une note de
