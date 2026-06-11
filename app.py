@@ -119,6 +119,14 @@ async def submit(
 
     image_url = None
 
+    if image_data:
+        try:
+            image_bytes = base64.b64decode(image_data)
+            image_url = sheets_client.upload_image(image_bytes, media_type or "image/jpeg")
+        except Exception as e:
+            print(f"Erreur de décodage/upload de l'image : {e}")
+            image_url = None
+
     success = sheets_client.append_expense(data, image_url)
 
     if success:

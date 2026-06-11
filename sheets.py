@@ -1,6 +1,10 @@
 import os
+import io
+import uuid
 import gspread
 from google.oauth2.service_account import Credentials
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaIoBaseUpload
 from dotenv import load_dotenv
 from datetime import datetime
 
@@ -24,10 +28,44 @@ class GoogleSheetsClient:
         # Autorisation gspread avec ces credentials
         client = gspread.authorize(creds)
 
+        # Client Google Drive (mêmes credentials, scope "drive" inclus)
+        self.drive_service = build("drive", "v3", credentials=creds)
+
         # Ouverture du Sheet par son ID, puis sélection de l'onglet "Notes de frais"
         sheet_id = os.getenv("GOOGLE_SHEET_ID")
         spreadsheet = client.open_by_key(sheet_id)
         self.sheet = spreadsheet.worksheet("Notes de frais")
+
+    def upload_image(self, image_bytes: bytes, media_type: str) -> str:
+        """
+        Upload une image sur Google Drive et la rend accessible publiquement
+        en lecture. Retourne l'URL de l'image, ou None en cas d'échec.
+        """
+        try:
+            # Détermine une extension simple à partir du type MIME
+            extension = media_type.split("/")[-1] if media_type else "jpg"
+            filename = f"{uuid.uuid4()}.{extension}"
+
+            file_metadata = {"name": filename}
+            media = MediaIoBaseUpload(io.BytesIO(image_bytes), mimetype=media_type)
+
+            uploaded_file = (
+                self.drive_service.files()
+                .create(body=file_metadata, media_body=media, fields="id")
+                .execute()
+            )
+            file_id = uploaded_file.get("id")
+
+            # Permission de lecture publique (n'importe qui avec le lien)
+            self.drive_service.permissions().create(
+                fileId=file_id,
+                body={"role": "reader", "type": "anyone"},
+            ).execute()
+
+            return f"https://drive.google.com/uc?id={file_id}"
+        except Exception as e:
+            print(f"Erreur lors de l'upload sur Drive : {e}")
+            return None
 
     def append_expense(self, data: dict, image_url: str = None) -> bool:
         """
